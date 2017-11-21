@@ -166,6 +166,22 @@ scrape_configs:
     action: replace
     target_label: kubernetes_name
 
+# Scrape Config for HA Proxy (OpenShift Routers) running on the
+# OpenShift Cluster (this works from OpenShift 3.6 and on).
+# Port 1936 needs to be open in the Firewall on the nodes (Infranodes)
+# Router(s) are running.
+# This Job requires basic authentication. Username is always "admin".
+# Actual password can be found out by running the command:
+#   oc set env dc router -n default --list|grep STATS_PASSWORD
+- job_name: 'openshift-routers'
+  metrics_path: '/metrics'
+  scheme: http
+  basic_auth:
+    username: admin
+    password: {{ openshift_hosted_router_stats_password }}
+  static_configs:
+  - targets: ['10.180.21.14:1936','10.180.21.15:1936','10.180.21.16:1936']
+
 alerting:
   alertmanagers:
   - scheme: http
